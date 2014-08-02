@@ -54,7 +54,7 @@ public class GameActivity extends Activity {
     public void setFragment(Fragment fragment) {
         currentFragment = fragment;
         getFragmentManager().beginTransaction()
-                .add(R.id.content, fragment)
+                .replace(R.id.content, fragment)
                 .commit();
     }
 }

@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException;
 
 import au.com.codeka.rps.GameFragment;
 import au.com.codeka.rps.PhoneConnection;
+import au.com.codeka.rps.ResultFragment;
 
 /**
  * This is the state we're in while we're waiting to get the player's choice from the watch.
@@ -20,5 +21,8 @@ public class AwaitingPlayerChoiceState extends State {
                     "/rps/PlayerChoice", choice.getBytes("utf-8")));
         } catch (UnsupportedEncodingException e) {
         }
+
+        // now switch to the result fragment to display the result
+        stateManager.getGameActivity().setFragment(ResultFragment.newInstance(choice));
     }
 }

@@ -1,5 +1,7 @@
 package au.com.codeka.rps.game;
 
+import org.json.JSONObject;
+
 import au.com.codeka.rps.GameActivity;
 import au.com.codeka.rps.PhoneConnection;
 
@@ -38,6 +40,10 @@ public class StateManager {
         return gameActivity;
     }
     public PhoneConnection getPhoneConnection() { return phoneConnection; }
+
+    public void onFinalResult(JSONObject json) {
+        currentState.onFinalResult(json);
+    }
 
     public void enterState(String stateName) {
         Class<?> cls;

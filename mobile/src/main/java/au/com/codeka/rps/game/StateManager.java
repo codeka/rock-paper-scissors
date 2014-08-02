@@ -32,14 +32,15 @@ public class StateManager {
     void enterState(State newState) {
         if (currentState != newState) {
             DebugLog.write("Entering state '%s'.", newState.getClass().getSimpleName());
-
             currentState = newState;
-            currentState.onEnter();
+
             try {
                 watchConnection.sendMessage(new WatchConnection.Message("/rps/StateChange",
                         currentState.getClass().getSimpleName().getBytes("utf-8")));
             } catch (UnsupportedEncodingException e) {
             }
+
+            currentState.onEnter();
         }
     }
 }

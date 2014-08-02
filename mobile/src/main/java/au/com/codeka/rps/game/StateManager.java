@@ -2,16 +2,21 @@ package au.com.codeka.rps.game;
 
 import java.io.UnsupportedEncodingException;
 
+import au.com.codeka.rps.DebugLog;
 import au.com.codeka.rps.WatchConnection;
 
 /**
  * Manages which game state we're currently in.
  */
 public class StateManager {
-    private final WatchConnection watchConnection;
+    public static final StateManager i = new StateManager();
+    private WatchConnection watchConnection;
     private State currentState;
 
-    public StateManager(WatchConnection watchConnection) {
+    private StateManager() {
+    }
+
+    public void start(WatchConnection watchConnection) {
         this.watchConnection = watchConnection;
         enterState(new FindingOpponentState(this));
     }
@@ -24,8 +29,14 @@ public class StateManager {
         enterState(new GameRunningState(this, matchInfo));
     }
 
-    private void enterState(State newState) {
+    public void onMessageReceived(String path, String payload) {
+        currentState.onMessageReceived(path, payload);
+    }
+
+    void enterState(State newState) {
         if (currentState != newState) {
+            DebugLog.write("Entering state '%s'.", newState.getClass().getSimpleName());
+
             currentState = newState;
             currentState.onEnter();
             try {

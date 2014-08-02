@@ -13,17 +13,14 @@ import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
-import java.util.ArrayList;
-
 /**
- * Class that represents our connection to the watch.
+ * Class that represents our connection to the phone.
  */
-public class WatchConnection {
-    private static final String TAG = "WatchConnection";
+public class PhoneConnection {
+    private static final String TAG = "PhoneConnection";
     private GoogleApiClient googleApiClient;
     private boolean isConnected;
-    private ArrayList<Message> pendingMessages = new ArrayList<Message>();
-    private ArrayList<String> watchNodes = new ArrayList<String>();
+    private String phoneNode;
 
     public void setup(Context context) {
         googleApiClient = new GoogleApiClient.Builder(context)
@@ -33,18 +30,15 @@ public class WatchConnection {
                         Log.d(TAG, "onConnected: " + connectionHint);
                         Wearable.NodeApi.getConnectedNodes(googleApiClient).setResultCallback(
                                 new ResultCallback<NodeApi.GetConnectedNodesResult>() {
-                            @Override
-                            public void onResult(NodeApi.GetConnectedNodesResult getConnectedNodesResult) {
-                                for (Node node : getConnectedNodesResult.getNodes()) {
-                                    watchNodes.add(node.getId());
-                                }
-                                isConnected = true;
-                                for (Message msg : pendingMessages) {
-                                    sendMessage(msg);
-                                }
-                                pendingMessages.clear();
-                            }
-                        });
+                                    @Override
+                                    public void onResult(NodeApi.GetConnectedNodesResult getConnectedNodesResult) {
+                                        for (Node node : getConnectedNodesResult.getNodes()) {
+                                            phoneNode = node.getId();
+                                            break;
+                                        }
+                                        isConnected = true;
+                                    }
+                                });
                     }
                     @Override
                     public void onConnectionSuspended(int cause) {
@@ -73,12 +67,10 @@ public class WatchConnection {
 
     public void sendMessage(Message msg) {
         if (!isConnected) {
-            pendingMessages.add(msg);
+            throw new IllegalStateException("Cannot send message while not connected to phone.");
         } else {
-            for (String watchNode : watchNodes) {
-                Wearable.MessageApi.sendMessage(googleApiClient, watchNode, msg.getPath(),
-                        msg.getPayload());
-            }
+            Wearable.MessageApi.sendMessage(googleApiClient, phoneNode, msg.getPath(),
+                    msg.getPayload());
         }
     }
 

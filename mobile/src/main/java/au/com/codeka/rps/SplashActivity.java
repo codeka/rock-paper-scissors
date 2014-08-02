@@ -23,7 +23,6 @@ import au.com.codeka.rps.game.StateManager;
 
 public class SplashActivity extends Activity {
     private static final String TAG = "SplashActivity";
-    private StateManager stateManager;
     private WatchConnection watchConnection;
 
     @Override
@@ -39,7 +38,7 @@ public class SplashActivity extends Activity {
                     .commit();
         }
 
-        stateManager = new StateManager(watchConnection);
+        StateManager.i.start(watchConnection);
         watchConnection.sendMessage(new WatchConnection.Message("/rps/StartGame", null));
     }
 

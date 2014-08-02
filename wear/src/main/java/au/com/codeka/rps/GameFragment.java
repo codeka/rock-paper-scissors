@@ -29,6 +29,11 @@ public class GameFragment extends Fragment {
         return view;
     }
 
+    public String getCurrentChoice() {
+        String[] choices = {"Rock", "Paper", "Scissors"};
+        return choices[gridViewPager.getCurrentItem().y % 3];
+    }
+
     private class MyGridViewPagerAdapter extends GridPagerAdapter {
         @Override
         public int getColumnCount(int arg0) {

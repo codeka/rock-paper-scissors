@@ -1,5 +1,7 @@
 package au.com.codeka.rps.game;
 
+import android.os.Handler;
+
 import au.com.codeka.rps.DebugLog;
 
 /**
@@ -8,13 +10,22 @@ import au.com.codeka.rps.DebugLog;
 public class GameRunningState extends State {
     private final StateManager stateManager;
     private final MatchInfo matchInfo;
+    private final Handler handler;
 
     public GameRunningState(StateManager stateManager, MatchInfo matchInfo) {
         this.stateManager = stateManager;
         this.matchInfo = matchInfo;
+        handler = new Handler();
     }
 
     public void onEnter() {
         DebugLog.write("Game Started: match-id=%s", matchInfo.getMatchId());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+            DebugLog.write("Game finished, fetching player choice from watch.");
+            stateManager.enterState(new AwaitingPlayerChoiceState(stateManager));
+            }
+        }, 5000);
     }
 }

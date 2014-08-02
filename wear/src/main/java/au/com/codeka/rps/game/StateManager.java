@@ -1,6 +1,7 @@
 package au.com.codeka.rps.game;
 
 import au.com.codeka.rps.GameActivity;
+import au.com.codeka.rps.PhoneConnection;
 
 /**
  * Manages the current state of the game.
@@ -8,13 +9,15 @@ import au.com.codeka.rps.GameActivity;
 public class StateManager {
     public static StateManager i = new StateManager();
     private GameActivity gameActivity;
+    private PhoneConnection phoneConnection;
     private State currentState;
 
     private StateManager() {
     }
 
-    public void start(GameActivity gameActivity) {
+    public void start(GameActivity gameActivity, PhoneConnection phoneConnection) {
         this.gameActivity = gameActivity;
+        this.phoneConnection = phoneConnection;
         enterState(new FindingOpponentState());
     }
 
@@ -26,6 +29,7 @@ public class StateManager {
     public GameActivity getGameActivity() {
         return gameActivity;
     }
+    public PhoneConnection getPhoneConnection() { return phoneConnection; }
 
     public void enterState(String stateName) {
         Class<?> cls;

@@ -6,4 +6,7 @@ package au.com.codeka.rps.game;
 public class State {
     public void onEnter() {
     }
+
+    public void onMessageReceived(String path, String payload) {
+    }
 }

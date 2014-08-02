@@ -24,7 +24,6 @@ public class NotificationUpdateService extends WearableListenerService {
             }
 
             StateManager.i.enterState(newStateName);
-
         }
     }
 }

@@ -11,17 +11,25 @@ public class StateManager {
     private GameActivity gameActivity;
     private PhoneConnection phoneConnection;
     private State currentState;
+    private boolean started;
 
     private StateManager() {
     }
 
     public void start(GameActivity gameActivity, PhoneConnection phoneConnection) {
+        started = true;
         this.gameActivity = gameActivity;
         this.phoneConnection = phoneConnection;
-        enterState(new FindingOpponentState());
+        if (currentState == null) {
+            currentState = new FindingOpponentState();
+        }
+        State state = currentState;
+        currentState = null;
+        enterState(state);
     }
 
     public void stop() {
+        started = false;
         this.gameActivity = null;
         // enterState(Stopped)?
     }
@@ -35,7 +43,12 @@ public class StateManager {
         Class<?> cls;
         try {
             cls = Class.forName("au.com.codeka.rps.game." + stateName);
-            enterState((State) cls.newInstance());
+            State state = (State) cls.newInstance();
+            if (started) {
+                enterState(state);
+            } else {
+                currentState = state;
+            }
         } catch (ClassNotFoundException e) {
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {

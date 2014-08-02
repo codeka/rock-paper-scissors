@@ -82,7 +82,7 @@ public class FindingOpponentState extends State {
                 // usually just a timeout, we'll just try again. TODO: handle network errors
                 new FindOpponentTask().execute();
             } else {
-                stateManager.onMatchStarted(matchInfo);
+                stateManager.enterState(new GameRunningState(stateManager, matchInfo));
             }
         }
     };

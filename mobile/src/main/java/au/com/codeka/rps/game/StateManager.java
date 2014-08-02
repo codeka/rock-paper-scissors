@@ -25,10 +25,6 @@ public class StateManager {
         return watchConnection;
     }
 
-    public void onMatchStarted(MatchInfo matchInfo) {
-        enterState(new GameRunningState(this, matchInfo));
-    }
-
     public void onMessageReceived(String path, String payload) {
         currentState.onMessageReceived(path, payload);
     }

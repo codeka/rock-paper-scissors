@@ -8,9 +8,11 @@ import au.com.codeka.rps.DebugLog;
  */
 public class AwaitingPlayerChoiceState extends State {
     private final StateManager stateManager;
+    private final MatchInfo matchInfo;
 
-    public AwaitingPlayerChoiceState(StateManager stateManager) {
+    public AwaitingPlayerChoiceState(StateManager stateManager, MatchInfo matchInfo) {
         this.stateManager = stateManager;
+        this.matchInfo = matchInfo;
     }
 
     @Override
@@ -18,6 +20,8 @@ public class AwaitingPlayerChoiceState extends State {
         if (path.equals("/rps/PlayerChoice")) {
             String choice = payload;
             DebugLog.write("Player choice: %s", choice);
+
+            stateManager.enterState(new AwaitingResultState(stateManager, matchInfo, choice));
         }
     }
 }

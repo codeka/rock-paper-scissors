@@ -24,7 +24,7 @@ public class GameRunningState extends State {
             @Override
             public void run() {
             DebugLog.write("Game finished, fetching player choice from watch.");
-            stateManager.enterState(new AwaitingPlayerChoiceState(stateManager));
+            stateManager.enterState(new AwaitingPlayerChoiceState(stateManager, matchInfo));
             }
         }, 5000);
     }

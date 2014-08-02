@@ -9,8 +9,7 @@ import android.widget.FrameLayout;
 import au.com.codeka.rps.game.StateManager;
 
 public class GameActivity extends Activity {
-    private StateManager stateManager;
-    private FrameLayout contentView;
+    private boolean inflateComplete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,10 +19,24 @@ public class GameActivity extends Activity {
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
-                contentView = (FrameLayout) stub.findViewById(R.id.content);
-                stateManager = new StateManager(GameActivity.this);
+                inflateComplete = true;
+                StateManager.i.start(GameActivity.this);
             }
         });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (inflateComplete) {
+            StateManager.i.start(this);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        StateManager.i.stop();
     }
 
     public void setFragment(Fragment fragment) {

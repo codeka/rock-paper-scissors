@@ -39,7 +39,7 @@ public class SplashActivity extends Activity {
                     .commit();
         }
 
-        stateManager = new StateManager();
+        stateManager = new StateManager(watchConnection);
         watchConnection.sendMessage(new WatchConnection.Message("/rps/StartGame", null));
     }
 

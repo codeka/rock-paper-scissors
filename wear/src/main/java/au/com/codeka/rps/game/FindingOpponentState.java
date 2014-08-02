@@ -6,14 +6,14 @@ import au.com.codeka.rps.FindingOpponentFragment;
  * The initial state of the game, while we're waiting for an opponent to join.
  */
 public class FindingOpponentState extends State {
-    private final StateManager stateManager;
+    private StateManager stateManager;
 
-    public FindingOpponentState(StateManager stateManager) {
-        this.stateManager = stateManager;
+    public FindingOpponentState() {
     }
 
     @Override
-    public void onEnter() {
-        stateManager.getGameActivity().setFragment(new FindingOpponentFragment());
+    public void onEnter(StateManager stateManager) {
+        this.stateManager = stateManager;
+        this.stateManager.getGameActivity().setFragment(new FindingOpponentFragment());
     }
 }

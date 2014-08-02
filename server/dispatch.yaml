@@ -1,0 +1,3 @@
+dispatch:
+- url: "*/game/*"
+  module: game

@@ -21,6 +21,37 @@
         android:layout_centerHorizontal="true"
         android:background="@android:color/background_dark" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:textStyle="bold"
+        android:text="YOU" />
+
+    <TextView android:id="@+id/you_wins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/divider"
+        android:layout_margin="4dp"
+        android:textStyle="bold"
+        android:text="0" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_margin="4dp"
+        android:textStyle="bold"
+        android:text="THEM" />
+
+    <TextView android:id="@+id/them_wins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/divider"
+        android:layout_margin="4dp"
+        android:textStyle="bold"
+        android:text="0" />
+
     <ImageView android:id="@+id/player_choice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

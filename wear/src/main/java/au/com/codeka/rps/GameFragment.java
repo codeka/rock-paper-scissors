@@ -42,6 +42,11 @@ public class GameFragment extends Fragment {
     }
 
     private void setTimer(final int value) {
+        Activity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
         Animation timerAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.timer_text);
         timerAnimation.setAnimationListener(new Animation.AnimationListener() {
             @Override

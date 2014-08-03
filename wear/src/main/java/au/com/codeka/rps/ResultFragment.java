@@ -13,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import au.com.codeka.rps.game.StateManager;
+
 /**
  * This fragment shows the result of the game.
  */
@@ -21,6 +23,8 @@ public class ResultFragment extends Fragment {
     private ProgressBar otherLoading;
     private TextView resultText;
     private Handler handler;
+    private TextView numYouWinsText;
+    private TextView numThemWinsText;
 
     public enum Result {
         Win,
@@ -46,6 +50,9 @@ public class ResultFragment extends Fragment {
         otherChoice = (ImageView) view.findViewById(R.id.other_choice);
         otherLoading = (ProgressBar) view.findViewById(R.id.other_loading);
         resultText = (TextView) view.findViewById(R.id.result);
+        numYouWinsText = (TextView) view.findViewById(R.id.you_wins);
+        numThemWinsText = (TextView) view.findViewById(R.id.them_wins);
+        updateWinCounts();
         return view;
     }
 
@@ -70,8 +77,15 @@ public class ResultFragment extends Fragment {
                     resultText.setText("DRAW!");
                     break;
             }
+
+            updateWinCounts();
             }
         });
+    }
+
+    private void updateWinCounts() {
+        numYouWinsText.setText(Integer.toString(StateManager.i.getNumYouWins()));
+        numThemWinsText.setText(Integer.toString(StateManager.i.getNumThemWins()));
     }
 
     private void setImage(ImageView iv, String choice) {

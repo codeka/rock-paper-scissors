@@ -1,9 +1,11 @@
 package au.com.codeka.rps.game;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import au.com.codeka.rps.GameActivity;
 import au.com.codeka.rps.PhoneConnection;
+import au.com.codeka.rps.ResultFragment;
 
 /**
  * Manages the current state of the game.
@@ -14,6 +16,8 @@ public class StateManager {
     private PhoneConnection phoneConnection;
     private State currentState;
     private boolean started;
+    private int numYouWins;
+    private int numThemWins;
 
     private StateManager() {
     }
@@ -36,12 +40,34 @@ public class StateManager {
         // enterState(Stopped)?
     }
 
+    public int getNumYouWins() {
+        return numYouWins;
+    }
+
+    public int getNumThemWins() {
+        return numThemWins;
+    }
+
     public GameActivity getGameActivity() {
         return gameActivity;
     }
     public PhoneConnection getPhoneConnection() { return phoneConnection; }
 
     public void onFinalResult(JSONObject json) {
+        try {
+            String s = json.getString("result").toLowerCase();
+            if (s.equals("win")) {
+                numYouWins ++;
+            } else if (s.equals("loss")) {
+                numThemWins ++;
+            } else {
+                numYouWins ++;
+                numThemWins ++;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         currentState.onFinalResult(json);
     }
 

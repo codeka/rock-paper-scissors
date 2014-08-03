@@ -26,6 +26,6 @@ public class GameRunningState extends State {
             DebugLog.write("Game finished, fetching player choice from watch.");
             stateManager.enterState(new AwaitingPlayerChoiceState(stateManager, matchInfo));
             }
-        }, 5000);
+        }, 6000);
     }
 }

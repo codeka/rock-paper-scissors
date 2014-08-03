@@ -23,7 +23,14 @@ public class DisplayingResultState extends State {
     public void onFinalResult(final JSONObject json) {
         final ResultFragment fragment = (ResultFragment) stateManager.getGameActivity().getCurrentFragment();
         try {
-            fragment.setOtherChoice(json.getString("other_choice"));
+            ResultFragment.Result result = ResultFragment.Result.Draw;
+            String s = json.getString("result").toLowerCase();
+            if (s.equals("win")) {
+                result = ResultFragment.Result.Win;
+            } else if (s.equals("loss")) {
+                result = ResultFragment.Result.Loss;
+            }
+            fragment.setOtherChoice(json.getString("other_choice"), result);
         } catch (JSONException e) {
         }
     }

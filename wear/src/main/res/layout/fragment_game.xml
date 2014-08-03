@@ -14,4 +14,12 @@
         tools:context=".GameActivity"
         tools:deviceIds="wear_square" />
 
+    <TextView android:id="@+id/timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="150sp"
+        android:text="1"
+        android:visibility="gone" />
+
 </FrameLayout>

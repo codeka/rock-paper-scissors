@@ -1,7 +1,7 @@
 package au.com.codeka.rps.game;
 
 /**
- * Created by dean on 2/08/14.
+ * Data object for holding the result of a single match.
  */
 public class ResultInfo {
     private final String matchId;

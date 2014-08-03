@@ -8,8 +8,10 @@ import android.support.wearable.view.GridViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 /**
  * This fragment shows the result of the game.
@@ -17,7 +19,14 @@ import android.widget.ProgressBar;
 public class ResultFragment extends Fragment {
     private ImageView otherChoice;
     private ProgressBar otherLoading;
+    private TextView resultText;
     private Handler handler;
+
+    public enum Result {
+        Win,
+        Loss,
+        Draw
+    }
 
     public static ResultFragment newInstance(String playerChoice) {
         Bundle args = new Bundle();
@@ -36,16 +45,31 @@ public class ResultFragment extends Fragment {
         setImage(((ImageView) view.findViewById(R.id.player_choice)), getArguments().getString("PlayerChoice"));
         otherChoice = (ImageView) view.findViewById(R.id.other_choice);
         otherLoading = (ProgressBar) view.findViewById(R.id.other_loading);
+        resultText = (TextView) view.findViewById(R.id.result);
         return view;
     }
 
-    public void setOtherChoice(final String choice) {
+    public void setOtherChoice(final String choice, final Result result) {
         handler.post(new Runnable() {
             @Override
             public void run() {
             setImage(otherChoice, choice);
             otherLoading.setVisibility(View.GONE);
             otherChoice.setVisibility(View.VISIBLE);
+
+            resultText.startAnimation(AnimationUtils.loadAnimation(
+                    getActivity(), R.anim.result_text));
+            switch(result) {
+                case Win:
+                    resultText.setText("YOU WIN!");
+                    break;
+                case Loss:
+                    resultText.setText("YOU LOSE!");
+                    break;
+                case Draw:
+                    resultText.setText("DRAW!");
+                    break;
+            }
             }
         });
     }

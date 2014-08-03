@@ -1,5 +1,7 @@
 package au.com.codeka.rps.game;
 
+import android.os.Handler;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,12 +17,14 @@ public class DisplayingResultState extends State {
     private final StateManager stateManager;
     private final MatchInfo matchInfo;
     private final ResultInfo resultInfo;
+    private final Handler handler;
 
     public DisplayingResultState(StateManager stateManager, MatchInfo matchInfo,
                                  ResultInfo resultInfo) {
         this.stateManager = stateManager;
         this.matchInfo = matchInfo;
         this.resultInfo = resultInfo;
+        handler = new Handler();
     }
 
     @Override
@@ -42,5 +46,13 @@ public class DisplayingResultState extends State {
         } catch (UnsupportedEncodingException e) {
             DebugLog.write("ERROR : %s", e.getMessage());
         }
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                DebugLog.write("Starting next match!");
+        //        stateManager.enterState(new GameRunningState(stateManager, matchInfo));
+            }
+        }, 5000);
     }
 }

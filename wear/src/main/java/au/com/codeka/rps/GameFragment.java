@@ -4,12 +4,16 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Handler;
 import android.support.wearable.view.GridPagerAdapter;
 import android.support.wearable.view.GridViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 
 /**
@@ -18,6 +22,8 @@ import android.widget.ImageView;
  */
 public class GameFragment extends Fragment {
     private GridViewPager gridViewPager;
+    private TextView timerText;
+    private Handler handler;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -26,7 +32,42 @@ public class GameFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_game, container, false);
         gridViewPager = (GridViewPager) view.findViewById(R.id.pager);
         gridViewPager.setAdapter(new MyGridViewPagerAdapter());
+
+        handler = new Handler();
+
+        timerText = (TextView) view.findViewById(R.id.timer);
+        setTimer(3);
+
         return view;
+    }
+
+    private void setTimer(final int value) {
+        Animation timerAnimation = AnimationUtils.loadAnimation(getActivity(), R.anim.timer_text);
+        timerAnimation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                timerText.setVisibility(View.GONE);
+            }
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+            }
+        });
+
+        timerText.setVisibility(View.VISIBLE);
+        timerText.setText(Integer.toString(value));
+        timerText.setAnimation(timerAnimation);
+
+        if (value > 1) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setTimer(value - 1);
+                }
+            }, 2000);
+        }
     }
 
     public String getCurrentChoice() {

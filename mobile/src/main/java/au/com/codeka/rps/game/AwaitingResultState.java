@@ -33,6 +33,7 @@ public class AwaitingResultState extends State {
 
     @Override
     public void onEnter() {
+        DebugLog.write("Waiting for response from other player...");
         new PostChoiceTask().execute();
     }
 
@@ -42,10 +43,9 @@ public class AwaitingResultState extends State {
         @Override
         protected ResultInfo doInBackground(Void... params) {
             // TODO: post this, not GET
-            String url = String.format("http://192.168.1.4:8274/game/%s?round=%d&player_id=%s&choice=%s", // TODO: configure URL
+            String url = String.format("https://rps-server.appspot.com/game/%s?round=%d&player_id=%s&choice=%s", // TODO: configure URL
                     matchInfo.getMatchId(), matchInfo.getRound(), matchInfo.getPlayerId(),
                     playerChoice.toLowerCase());
-            DebugLog.write(url);
             try {
                 HttpResponse resp = httpClient.execute(new HttpGet(url));
                 StatusLine statusLine = resp.getStatusLine();
@@ -91,7 +91,7 @@ public class AwaitingResultState extends State {
 
         private void handleError(String err) {
             if (err.equals("NO-RESPONSE")) {
-                DebugLog.write("Other player has not checked in yet.");
+                // Don't write anything.
             } else {
                 DebugLog.write("Unknown error: %s", err);
             }

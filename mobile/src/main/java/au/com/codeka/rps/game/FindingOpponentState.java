@@ -32,15 +32,14 @@ public class FindingOpponentState extends State {
 
     @Override
     public void onEnter() {
+        DebugLog.write("Waiting for opponent...");
         new FindOpponentTask().execute();
     }
 
     private class FindOpponentTask extends AsyncTask<Void, Void, MatchInfo> {
         @Override
         protected MatchInfo doInBackground(Void... params) {
-            DebugLog.write("Waiting for opponent...");
-
-            String url = "http://192.168.1.4:8274/game/find-opponent?player_id=" + playerId; // TODO: configure URL
+            String url = "https://rps-server.appspot.com/game/find-opponent?player_id=" + playerId; // TODO: configure URL
             try {
                 HttpResponse resp = httpClient.execute(new HttpGet(url));
                 StatusLine statusLine = resp.getStatusLine();
@@ -82,7 +81,7 @@ public class FindingOpponentState extends State {
 
         private void handleError(String err) {
             if (err.equals("NO-OPPONENT")) {
-                DebugLog.write("No opponents yet.");
+                // don't write anything.
             } else {
                 DebugLog.write("Unknown error: %s", err);
             }

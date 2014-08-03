@@ -29,11 +29,13 @@ public class DisplayingResultState extends State {
 
     @Override
     public void onEnter() {
-        DebugLog.write("Game complete, result: %s (%s vs %s)", resultInfo.getResult(),
+        DebugLog.write("Game complete - match: %s, round: %d, result: %s (%s vs %s)",
+                matchInfo.getMatchId(), matchInfo.getRound(), resultInfo.getResult(),
                 resultInfo.getPlayerChoice(), resultInfo.getOtherChoice());
 
         JSONObject json = new JSONObject();
         try {
+            json.put("round", matchInfo.getRound());
             json.put("player_choice", resultInfo.getPlayerChoice());
             json.put("other_choice", resultInfo.getOtherChoice());
             json.put("result", resultInfo.getResult().toString());
@@ -51,7 +53,8 @@ public class DisplayingResultState extends State {
             @Override
             public void run() {
                 DebugLog.write("Starting next match!");
-        //        stateManager.enterState(new GameRunningState(stateManager, matchInfo));
+                matchInfo.nextRound();
+                stateManager.enterState(new GameRunningState(stateManager, matchInfo));
             }
         }, 5000);
     }

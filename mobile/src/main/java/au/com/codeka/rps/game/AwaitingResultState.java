@@ -41,10 +41,11 @@ public class AwaitingResultState extends State {
 
         @Override
         protected ResultInfo doInBackground(Void... params) {
-            DebugLog.write("Posting choice, awaiting result...");
-
-            String url = String.format("http://192.168.1.4:8274/game/%s?player_id=%s&choice=%s", // TODO: configure URL
-                    matchInfo.getMatchId(), matchInfo.getPlayerId(), playerChoice.toLowerCase());
+            // TODO: post this, not GET
+            String url = String.format("http://192.168.1.4:8274/game/%s?round=%d&player_id=%s&choice=%s", // TODO: configure URL
+                    matchInfo.getMatchId(), matchInfo.getRound(), matchInfo.getPlayerId(),
+                    playerChoice.toLowerCase());
+            DebugLog.write(url);
             try {
                 HttpResponse resp = httpClient.execute(new HttpGet(url));
                 StatusLine statusLine = resp.getStatusLine();
@@ -59,29 +60,23 @@ public class AwaitingResultState extends State {
                 String result = out.toString();
                 if (result.startsWith("ERR:")) {
                     handleError(result.substring(4));
+                    try {
+                        Thread.sleep(100, 0);
+                    } catch (InterruptedException e) {}
                     return null;
                 }
 
                 JSONObject json = new JSONObject(result);
                 String playerChoice = null;
                 String otherChoice = null;
-                Iterator<String> keysIter = json.getJSONObject("players").keys();
-                while (keysIter.hasNext()) {
-                    String key = keysIter.next();
-                    if (key.equals(matchInfo.getPlayerId())) {
-                        playerChoice = json.getJSONObject("players").getString(key);
-                    } else {
-                        otherChoice = json.getJSONObject("players").getString(key);
-                    }
-                }
-
-                if (playerChoice == null) {
-                    DebugLog.write("ERROR : playerChoice is null!");
-                    return null;
-                }
-                if (otherChoice == null) {
-                    DebugLog.write("ERROR : otherChoice is null!");
-                    return null;
+                JSONObject playerOne = json.getJSONObject("player_one");
+                JSONObject playerTwo = json.getJSONObject("player_two");
+                if (matchInfo.getPlayerId().equals(playerOne.getString("id"))) {
+                    playerChoice = playerOne.getString("choice");
+                    otherChoice = playerTwo.getString("choice");
+                } else {
+                    playerChoice = playerTwo.getString("choice");
+                    otherChoice = playerOne.getString("choice");
                 }
 
                 return new ResultInfo(matchInfo.getMatchId(), playerChoice, otherChoice);

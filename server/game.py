@@ -5,130 +5,119 @@ import uuid
 
 import webapp2
 
-from google.appengine.api import background_thread
 from google.appengine.ext import db
+from google.appengine.api import memcache
 
 
 class Match(db.Model):
   match_time = db.DateTimeProperty(auto_now_add=True)
   player_one_id = db.StringProperty()
   player_two_id = db.StringProperty()
+
+
+class MatchRound(db.Model):
+  round = db.IntegerProperty()
   player_one_choice = db.StringProperty()
   player_two_choice = db.StringProperty()
-  winner = db.IntegerProperty()
 
-
-# Wait 7 seconds for a response from the background threads. This needs to be less than 10 seconds, because that's
-# when App Engine will kill us anyway.
-MAX_WAIT_TIME_SEC = 7
-
-
-
-
-matchmaker_queue = Queue.Queue()
 
 class FindOpponentPage(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = 'text/plain'
+    cache = memcache.Client()
 
-    # We pass this queue to the match-maker thread, to notify with details of our opponent.
-    response_queue = Queue.Queue()
+    # check if there's already a match for this player
+    player_id = self.request.get("player_id")
+    match = cache.get("matches:" + player_id)
+    if match:
+      self.response.write(json.dumps(match))
+      return
 
-    request = {'response_queue': response_queue,
-               'id': str(uuid.uuid4())
-               }
-    matchmaker_queue.put(request)
+    # otherwise, check to see if there's another player waiting for a match
+    while True:
+      other_player_id = cache.gets("matchmaker")
+      if other_player_id and other_player_id != player_id:
+        # remove this match from cache to indicate that we're taking it
+        if not cache.cas("matchmaker", False):
+          continue
+        match_mdl = Match()
+        match_mdl.player_one_id = player_id
+        match_mdl.player_two_id = other_player_id
+        match_mdl.put()
 
-    try:
-      response = response_queue.get(True, MAX_WAIT_TIME_SEC)
-      # we got an opponent! write out their details to the response and we're done.
-      self.response.write(json.dumps(response));
-    except:
-      # No opponent within 7 seconds, enqueue again to notify the matchmaker we're giving up
-      # and then end the response
-      request['abandoned'] = True
-      matchmaker_queue.put(request)
-      self.response.write('ERR:NO-OPPONENT')
+        match = {'match_id': str(match_mdl.key().id()), 'player_one_id' : player_id, 'player_two_id': other_player_id}
+        memcache.set('matches:' + player_id, match)
+        memcache.set('matches:' + other_player_id, match)
+        memcache.set('matches:' + str(match_mdl.key().id()), match)
+        break
+      else:
+        if not cache.add("matchmaker", player_id, time=10):
+          if not cache.cas("matchmaker", player_id, time=10):
+            continue
+        break
 
-def matchmaker():
-  """This is a background thread which waits for two requests to come in. Once we've got two requests, we will
-  return both of them with information about each other so that a game can begin."""
-  first_opponent = None
-  second_opponent = None
-  while True:
-    first_opponent = matchmaker_queue.get()
-    second_opponent = matchmaker_queue.get()
-    if 'abandoned' in second_opponent and second_opponent['abandoned']:
-      # todo: make sure they're same opponent...
-      continue
+    if not match:
+      self.response.write("ERR:NO-OPPONENT")
+    else:
+      self.response.write(json.dumps(match));
 
-    match = Match()
-    match.player_one_id = first_opponent['id']
-    match.player_two_id = second_opponent['id']
-    match.put()
-    match_id = match.key().id()
-
-    first_opponent['response_queue'].put({'match_id': match_id, 'your_id': first_opponent['id']})
-    second_opponent['response_queue'].put({'match_id': match_id, 'your_id': second_opponent['id']})
-
-matchmaker_thread = background_thread.BackgroundThread(target=matchmaker)
-matchmaker_thread.start()
-
-
-
-
-match_queue = Queue.Queue()
 
 class MatchPage(webapp2.RequestHandler):
   def get(self, match_id):
-    # TODO: disable 'GET' handling (it's just for testing)
-    self.process(match_id, self.request.get('player_id'), self.request.get('choice'))
+    self.response.headers['Content-Type'] = 'text/plain'
+    cache = memcache.Client()
+    
+    match = cache.get('matches:' + match_id)
+    if not match:
+      match_mdl = Match.get_by_id(int(match_id))
+      if not match_mdl:
+        self.error(404)
+        return
+      match = {'match_id': str(match_mdl.key().id()), 'player_one_id': match_mdl.player_one_id,
+               'player_two_id': match_mdl.player_two_id}
+      cache.set('matches:' + match_id, match)
 
-  def post(self, match_id):
-    self.process(match_id, self.request.POST.get('player_id'), self.request.POST.get('choice'))
+    player_field = None
+    player_id = self.request.get('player_id')
+    if match['player_one_id'] == player_id:
+      player_field = 'player_one'
+    elif match['player_two_id'] == player_id:
+      player_field = 'player_two'
+    else:
+      self.error(404)
+      return
+    player_choice = self.request.get('choice')
 
-  def process(self, match_id, player_id, choice):
-    response_queue = Queue.Queue()
-    request = {'match_id': match_id, 'player_id': player_id, 'choice': choice,
-               'response_queue': response_queue}
-    match_queue.put(request)
+    match_round_no = int(self.request.get("round"))
+    while True:
+      match_round = cache.gets('match-round:' + match_id + ':' + str(match_round_no))
+      if not match_round:
+        match_round = {'match_id': match_id, 'round': match_round_no, player_field: {'id': player_id, 'choice': player_choice}}
+        if not cache.add('match-round:' + match_id + ':' + str(match_round_no), match_round):
+          continue
+        else:
+          break
+      else:
+        match_round[player_field] = {'id': player_id, 'choice': player_choice}
+        if not cache.cas('match-round:' + match_id + ':' + str(match_round_no), match_round):
+          continue
+        else:
+          break
 
-    try:
-      response = response_queue.get(True, MAX_WAIT_TIME_SEC)
-      self.response.write(json.dumps(response));
-    except:
-      # no response yet, just write an error and get the client to request again.
+    if 'player_one' in match_round and 'player_two' in match_round:
+      parent_key = db.Key.from_path('Match', match_id)
+      key = db.Key.from_path('MatchRound', match_round_no, parent=parent_key)
+      match_round_mdl = MatchRound.get(key)
+      if not match_round_mdl:
+        match_round_mdl = MatchRound(parent=parent_key)
+      match_round_mdl.round = match_round_no
+      match_round_mdl.player_one_choice = match_round['player_one']['choice']
+      match_round_mdl.player_two_choice = match_round['player_two']['choice']
+      match_round_mdl.put()
+      self.response.write(json.dumps(match_round))
+    else:
       self.response.write('ERR:NO-RESPONSE')
 
-
-def matchprocessor():
-  matches = {}
-  while True:
-    request = match_queue.get()
-    if request['match_id'] not in matches:
-      match = {'match_id': request['match_id'], 'players': {request['player_id']: request['choice']},
-               'response_queues': []}
-      matches[request['match_id']] = match
-    else:
-      match = matches[request['match_id']]
-      match['players'][request['player_id']] = request['choice']
-    match['response_queues'].append(request['response_queue'])
-    if len(match['players']) == 2:
-      match_mdl = Match.get_by_id(long(match['match_id']))
-      for player_id, choice in match['players'].iteritems():
-        if match_mdl.player_one_id == player_id:
-          match_mdl.player_one_choice = choice
-        elif match_mdl.player_two_id == player_id:
-          match_mdl.player_two_choice = choice
-      match_mdl.put()
-      response = {'players': match['players'], 'winner': 'TODO'}
-      for response_queue in match['response_queues']:
-        response_queue.put(response)
-  #TODO: clean out matches of old matches every now & then
-
-
-matchprocessor_thread = background_thread.BackgroundThread(target=matchprocessor)
-matchprocessor_thread.start()
 
 app = webapp2.WSGIApplication([
     ('/game/find-opponent', FindOpponentPage),

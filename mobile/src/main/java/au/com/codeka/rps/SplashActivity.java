@@ -30,6 +30,7 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        DebugLog.initialize();
         watchConnection = new WatchConnection();
         watchConnection.setup(this);
         if (savedInstanceState == null) {

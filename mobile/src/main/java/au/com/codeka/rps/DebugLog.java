@@ -14,10 +14,14 @@ public class DebugLog {
     private static Runnable onMsgsChangedRunnable;
     private static Handler handler;
 
-    public static void setOnMsgsChangedRunnable(Runnable runnable) {
-        onMsgsChangedRunnable = runnable;
+    public static void initialize() {
         handler = new Handler();
     }
+
+    public static void setOnMsgsChangedRunnable(Runnable runnable) {
+        onMsgsChangedRunnable = runnable;
+    }
+
     public static Runnable getOnMsgsChangedRunnable() {
         return onMsgsChangedRunnable;
     }
@@ -27,11 +31,15 @@ public class DebugLog {
     }
 
     public static void write(String fmt, Object... args) {
-        String msg = String.format(Locale.ENGLISH, fmt, args);
-        msgs.add(msg);
-
-        if (onMsgsChangedRunnable != null) {
-            handler.post(onMsgsChangedRunnable);
-        }
+        final String msg = String.format(Locale.ENGLISH, fmt, args);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                msgs.add(msg);
+                if (onMsgsChangedRunnable != null) {
+                    onMsgsChangedRunnable.run();
+                }
+            }
+        });
     }
 }

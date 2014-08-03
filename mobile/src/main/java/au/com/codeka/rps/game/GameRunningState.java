@@ -19,7 +19,8 @@ public class GameRunningState extends State {
     }
 
     public void onEnter() {
-        DebugLog.write("Game Started: match-id=%s", matchInfo.getMatchId());
+        DebugLog.write("Game Started: match-id=%s round=%d", matchInfo.getMatchId(),
+                matchInfo.getRound());
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {

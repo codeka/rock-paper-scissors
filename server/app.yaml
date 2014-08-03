@@ -1,5 +1,5 @@
 application: rps-server
-version: uno
+version: 2
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -7,3 +7,5 @@ threadsafe: true
 handlers:
 - url: /
   script: frontend.app
+- url: /game.*
+  script: game.app
